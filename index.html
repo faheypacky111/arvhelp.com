@@ -24,55 +24,39 @@
     body { font-family: 'Inter', system_ui, sans-serif; background: #0a0a0a; }
     .display-font { font-family: 'Playfair Display', serif; }
     .gold { color: #d4af37; }
-    .input-focus {
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .input-focus:focus {
-      border-color: #d4af37;
-      box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15);
-      transform: scale(1.01);
-    }
-    .card {
-      background: rgba(20, 20, 20, 0.95);
-      backdrop-filter: blur(20px);
-    }
+    .input-focus { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .input-focus:focus { border-color: #d4af37; box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15); transform: scale(1.01); }
+    .card { background: rgba(20, 20, 20, 0.98); backdrop-filter: blur(20px); }
   </style>
 </head>
 <body class="min-h-screen text-zinc-200">
   <div class="max-w-5xl mx-auto px-6 pt-20 pb-24">
 
     <div class="card rounded-3xl p-12 border border-zinc-800 shadow-2xl">
-      <label class="block text-xs uppercase tracking-[3px] text-zinc-500 mb-4 font-medium">
-        Subject Property Address
-      </label>
-      <input id="address" 
-             type="text" 
-             placeholder="123 Main Street, Peshtigo, WI 54157"
-             class="input-focus w-full bg-transparent border border-zinc-700 focus:border-amber-300 rounded-2xl px-8 py-8 text-3xl outline-none placeholder-zinc-600">
+      <label class="block text-xs uppercase tracking-[3px] text-zinc-500 mb-4 font-medium">SUBJECT PROPERTY ADDRESS</label>
+      <input id="address" type="text" placeholder="923 Hilltop Dr, Milton, WI 53563" class="input-focus w-full bg-transparent border border-zinc-700 focus:border-amber-300 rounded-2xl px-8 py-8 text-3xl outline-none placeholder-zinc-600">
 
-      <button onclick="runComps()" 
-              class="mt-10 w-full py-7 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 hover:brightness-110 transition-all duration-300 rounded-2xl text-xl font-medium tracking-widest text-black">
+      <button onclick="runComps()" class="mt-10 w-full py-7 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 hover:brightness-110 transition-all duration-300 rounded-2xl text-xl font-medium tracking-widest text-black">
         DETERMINE ARV
       </button>
     </div>
 
-    <!-- Results -->
     <div id="results" class="hidden mt-20">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div class="lg:col-span-5 card rounded-3xl p-12 border border-zinc-800">
           <p class="uppercase text-amber-300 text-xs tracking-[2px] mb-2">ESTIMATED AFTER-REPAIR VALUE</p>
-          <div id="arvMid" class="display-font text-8xl font-light gold leading-none mt-6 mb-2">$248,000</div>
-          <div id="arvRange" class="text-3xl text-zinc-400">$232,000 – $265,000</div>
+          <div id="arvMid" class="display-font text-7xl font-light gold leading-none mt-6 mb-1">$248,000</div>
+          <div id="arvRange" class="text-2xl text-zinc-400">$232,000 – $265,000</div>
 
           <div class="mt-12 pt-10 border-t border-zinc-700 grid grid-cols-2 gap-8">
             <div>
-              <div class="text-xs uppercase tracking-widest text-zinc-500">Max Offer</div>
-              <div id="maxOffer" class="display-font text-5xl gold mt-2">$186,000</div>
-              <div class="text-xs text-zinc-500 mt-1">(75% Rule)</div>
+              <div class="text-xs uppercase tracking-widest text-zinc-500 mb-1">MAX OFFER</div>
+              <div id="maxOffer" class="display-font text-5xl gold">$186,000</div>
+              <div class="text-xs text-zinc-500">(75% Rule)</div>
             </div>
             <div>
-              <div class="text-xs uppercase tracking-widest text-zinc-500">Repair Budget</div>
-              <div id="repairBudget" class="display-font text-5xl text-zinc-300 mt-2">$35,000</div>
+              <div class="text-xs uppercase tracking-widest text-zinc-500 mb-1">REPAIR BUDGET</div>
+              <div id="repairBudget" class="display-font text-5xl text-zinc-300">$35,000</div>
             </div>
           </div>
         </div>
@@ -82,19 +66,12 @@
           <div id="compsTable" class="overflow-x-auto"></div>
         </div>
       </div>
-
-      <div class="mt-12 text-center text-xs text-zinc-500 max-w-md mx-auto">
-        Weighted average from recent sold comps • Public sources • Adjusted for condition, proximity & market trends
-      </div>
     </div>
 
     <div id="loading" class="hidden text-center py-32">
-      <div class="inline-flex flex-col items-center">
-        <i class="fa-solid fa-spinner fa-spin text-5xl gold"></i>
-        <p class="mt-8 text-zinc-400 text-lg tracking-widest">ANALYZING MARKET DATA...</p>
-      </div>
+      <i class="fa-solid fa-spinner fa-spin text-5xl gold"></i>
+      <p class="mt-8 text-zinc-400 text-lg tracking-widest">ANALYZING MARKET DATA...</p>
     </div>
-
   </div>
 
   <script>
@@ -108,10 +85,7 @@
 
     function runComps() {
       const address = document.getElementById('address').value.trim();
-      if (!address) {
-        alert("Please enter a property address");
-        return;
-      }
+      if (!address) return alert("Please enter a property address");
 
       document.getElementById('results').classList.add('hidden');
       document.getElementById('loading').classList.remove('hidden');
@@ -125,51 +99,20 @@
 
         document.getElementById('arvMid').textContent = '$248,000';
         document.getElementById('arvRange').textContent = '$232,000 – $265,000';
-        document.getElementById('maxOffer').textContent = '$ ' + maxOffer.toLocaleString();
+        document.getElementById('maxOffer').textContent = '$' + maxOffer.toLocaleString();
         document.getElementById('repairBudget').textContent = '$35,000';
 
-        let html = `
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-zinc-700 text-[10px] uppercase tracking-widest text-zinc-500">
-                <th class="text-left pb-4">Address</th>
-                <th class="text-right pb-4">Sold</th>
-                <th class="text-center pb-4">Date</th>
-                <th class="text-center pb-4">Beds/Baths</th>
-                <th class="text-right pb-4">Sq Ft</th>
-                <th class="text-center pb-4">Distance</th>
-                <th class="text-right pb-4">Adj.</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-zinc-800">
-        `;
-
+        let html = `<table class="w-full text-sm"><thead><tr class="border-b border-zinc-700 text-xs uppercase tracking-widest text-zinc-500"><th class="text-left py-4">Address</th><th class="text-right py-4">Sold</th><th class="text-center py-4">Date</th><th class="text-center py-4">Beds/Baths</th><th class="text-right py-4">Sq Ft</th><th class="text-center py-4">Distance</th><th class="text-right py-4">Adj.</th></tr></thead><tbody class="divide-y divide-zinc-800">`;
         demoComps.forEach(c => {
-          html += `
-            <tr class="group hover:bg-white/5 transition-colors">
-              <td class="py-6 font-light">${c.address}</td>
-              <td class="py-6 text-right font-light">$${c.sold.toLocaleString()}</td>
-              <td class="py-6 text-center text-zinc-400">${c.date}</td>
-              <td class="py-6 text-center">${c.beds}</td>
-              <td class="py-6 text-right">${c.sqft}</td>
-              <td class="py-6 text-center text-zinc-400">${c.dist}</td>
-              <td class="py-6 text-right text-emerald-400">${c.adj}</td>
-            </tr>
-          `;
+          html += `<tr class="hover:bg-white/5"><td class="py-5 font-light">${c.address}</td><td class="py-5 text-right">$${c.sold.toLocaleString()}</td><td class="py-5 text-center text-zinc-400">${c.date}</td><td class="py-5 text-center">${c.beds}</td><td class="py-5 text-right">${c.sqft}</td><td class="py-5 text-center text-zinc-400">${c.dist}</td><td class="py-5 text-right text-emerald-400">${c.adj}</td></tr>`;
         });
-
         html += `</tbody></table>`;
         document.getElementById('compsTable').innerHTML = html;
-      }, 1350);
+      }, 1100);
     }
 
-    document.getElementById('address').addEventListener('keypress', e => {
-      if (e.key === 'Enter') runComps();
-    });
-
-    window.onload = () => {
-      document.getElementById('address').value = "123 Main Street, Peshtigo, WI 54157";
-    };
+    document.getElementById('address').addEventListener('keypress', e => { if (e.key === 'Enter') runComps(); });
+    window.onload = () => { document.getElementById('address').value = "923 Hilltop Dr, Milton, WI 53563"; };
   </script>
 </body>
 </html>
