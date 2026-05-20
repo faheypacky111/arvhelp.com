@@ -21,16 +21,9 @@
     }
   </script>
   <style>
-    body {
-      font-family: 'Inter', system_ui, sans-serif;
-      background: #0a0a0a;
-    }
-    .display-font {
-      font-family: 'Playfair Display', serif;
-    }
-    .gold {
-      color: #d4af37;
-    }
+    body { font-family: 'Inter', system_ui, sans-serif; background: #0a0a0a; }
+    .display-font { font-family: 'Playfair Display', serif; }
+    .gold { color: #d4af37; }
     .input-focus {
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -74,8 +67,8 @@
           <div class="mt-12 pt-10 border-t border-zinc-700 grid grid-cols-2 gap-8">
             <div>
               <div class="text-xs uppercase tracking-widest text-zinc-500">Max Offer</div>
-              <div id="maxOffer" class="display-font text-5xl gold mt-2">$173,600</div>
-              <div class="text-xs text-zinc-500 mt-1">(70% Rule)</div>
+              <div id="maxOffer" class="display-font text-5xl gold mt-2">$186,000</div>
+              <div class="text-xs text-zinc-500 mt-1">(75% Rule)</div>
             </div>
             <div>
               <div class="text-xs uppercase tracking-widest text-zinc-500">Repair Budget</div>
@@ -127,9 +120,12 @@
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('results').classList.remove('hidden');
 
+        const arv = 248000;
+        const maxOffer = Math.round(arv * 0.75);
+
         document.getElementById('arvMid').textContent = '$248,000';
         document.getElementById('arvRange').textContent = '$232,000 – $265,000';
-        document.getElementById('maxOffer').textContent = '$173,600';
+        document.getElementById('maxOffer').textContent = '$ ' + maxOffer.toLocaleString();
         document.getElementById('repairBudget').textContent = '$35,000';
 
         let html = `
