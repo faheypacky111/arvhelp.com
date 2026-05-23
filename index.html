@@ -3,29 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ARV Tool</title>
+  <title>ARV Tool — Homevly</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      content: [],
-      theme: {
-        extend: {
-          fontFamily: {
-            display: ['Playfair Display', 'serif'],
-            body: ['Inter', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
   <style>
-    body { font-family: 'Inter', system_ui, sans-serif; background: #0a0a0a; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #0a0a0a; }
     .display-font { font-family: 'Playfair Display', serif; }
     .gold { color: #d4af37; }
     .input-focus { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-    .input-focus:focus { border-color: #d4af37; box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15); transform: scale(1.01); }
+    .input-focus:focus { border-color: #d4af37; box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15); }
     .card { background: rgba(20, 20, 20, 0.98); backdrop-filter: blur(20px); }
   </style>
 </head>
@@ -34,30 +21,35 @@
 
     <div class="card rounded-3xl p-12 border border-zinc-800 shadow-2xl">
       <label class="block text-xs uppercase tracking-[3px] text-zinc-500 mb-4 font-medium">SUBJECT PROPERTY ADDRESS</label>
-      <input id="address" type="text" placeholder="923 Hilltop Dr, Milton, WI 53563" class="input-focus w-full bg-transparent border border-zinc-700 focus:border-amber-300 rounded-2xl px-8 py-8 text-3xl outline-none placeholder-zinc-600">
+      <input id="address" type="text" placeholder="923 Hilltop Dr, Milton, WI 53563" class="input-focus w-full bg-transparent border border-zinc-700 rounded-2xl px-8 py-8 text-3xl outline-none placeholder-zinc-600">
 
-      <button onclick="runComps()" class="mt-10 w-full py-7 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 hover:brightness-110 transition-all duration-300 rounded-2xl text-xl font-medium tracking-widest text-black">
+      <button id="runBtn" onclick="runARV()" class="mt-10 w-full py-7 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 hover:brightness-110 transition-all duration-300 rounded-2xl text-xl font-medium tracking-widest text-black">
         DETERMINE ARV
       </button>
+    </div>
+
+    <div id="error" class="hidden mt-8 p-6 rounded-2xl border border-red-900 bg-red-950/30 text-red-300"></div>
+
+    <div id="loading" class="hidden text-center py-32">
+      <i class="fa-solid fa-spinner fa-spin text-5xl gold"></i>
+      <p class="mt-8 text-zinc-400 text-lg tracking-widest" id="loadingText">PULLING COMPS...</p>
     </div>
 
     <div id="results" class="hidden mt-20">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div class="lg:col-span-5 card rounded-3xl p-12 border border-zinc-800">
           <p class="uppercase text-amber-300 text-xs tracking-[2px] mb-2">ESTIMATED AFTER-REPAIR VALUE</p>
-          <div id="arvMid" class="display-font text-7xl font-light gold leading-none mt-6 mb-1">$248,000</div>
-          <div id="arvRange" class="text-2xl text-zinc-400">$232,000 – $265,000</div>
+          <div id="arvMid" class="display-font text-7xl font-light gold leading-none mt-6 mb-1">—</div>
+          <div id="arvRange" class="text-2xl text-zinc-400">—</div>
 
-          <div class="mt-12 pt-10 border-t border-zinc-700 grid grid-cols-2 gap-8">
-            <div>
-              <div class="text-xs uppercase tracking-widest text-zinc-500 mb-1">MAX OFFER</div>
-              <div id="maxOffer" class="display-font text-5xl gold">$186,000</div>
-              <div class="text-xs text-zinc-500">(75% Rule)</div>
-            </div>
-            <div>
-              <div class="text-xs uppercase tracking-widest text-zinc-500 mb-1">REPAIR BUDGET</div>
-              <div id="repairBudget" class="display-font text-5xl text-zinc-300">$35,000</div>
-            </div>
+          <div class="mt-12 pt-10 border-t border-zinc-700">
+            <div class="text-xs uppercase tracking-widest text-zinc-500 mb-2">SUBJECT PROPERTY</div>
+            <div id="subjectInfo" class="text-zinc-300 text-sm leading-relaxed"></div>
+          </div>
+
+          <div class="mt-8 pt-6 border-t border-zinc-700">
+            <div class="text-xs uppercase tracking-widest text-zinc-500 mb-2">METHODOLOGY</div>
+            <div id="methodology" class="text-zinc-400 text-xs leading-relaxed"></div>
           </div>
         </div>
 
@@ -67,52 +59,95 @@
         </div>
       </div>
     </div>
-
-    <div id="loading" class="hidden text-center py-32">
-      <i class="fa-solid fa-spinner fa-spin text-5xl gold"></i>
-      <p class="mt-8 text-zinc-400 text-lg tracking-widest">ANALYZING MARKET DATA...</p>
-    </div>
   </div>
 
   <script>
-    const demoComps = [
-      { address: "456 Oak Avenue", sold: 238000, date: "Mar 2026", beds: "3/2", sqft: 1420, dist: "0.4 mi", adj: "+2%" },
-      { address: "789 Pine Road", sold: 252000, date: "Feb 2026", beds: "3/2", sqft: 1380, dist: "0.7 mi", adj: "-1%" },
-      { address: "321 Elm Street", sold: 241000, date: "Jan 2026", beds: "4/2", sqft: 1550, dist: "1.1 mi", adj: "+3%" },
-      { address: "654 Maple Lane", sold: 255000, date: "Dec 2025", beds: "3/1.5", sqft: 1350, dist: "0.3 mi", adj: "0%" },
-      { address: "112 Birch Court", sold: 229000, date: "Mar 2026", beds: "3/2", sqft: 1390, dist: "0.9 mi", adj: "-4%" }
-    ];
+    const EDGE_FUNCTION_URL = 'https://srdkmhvkmgrzvuhxaesb.supabase.co/functions/v1/arv-lookup';
+    const SUPABASE_ANON_KEY = 'sb_publishable_Bk7rO3hn513kLHSGwG9DFQ_Cq7moIkp';
 
-    function runComps() {
+    async function runARV() {
       const address = document.getElementById('address').value.trim();
-      if (!address) return alert("Please enter a property address");
+      if (!address) {
+        showError('Please enter a property address');
+        return;
+      }
 
+      document.getElementById('error').classList.add('hidden');
       document.getElementById('results').classList.add('hidden');
       document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('runBtn').disabled = true;
 
-      setTimeout(() => {
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('results').classList.remove('hidden');
-
-        const arv = 248000;
-        const maxOffer = Math.round(arv * 0.75);
-
-        document.getElementById('arvMid').textContent = '$248,000';
-        document.getElementById('arvRange').textContent = '$232,000 – $265,000';
-        document.getElementById('maxOffer').textContent = '$' + maxOffer.toLocaleString();
-        document.getElementById('repairBudget').textContent = '$35,000';
-
-        let html = `<table class="w-full text-sm"><thead><tr class="border-b border-zinc-700 text-xs uppercase tracking-widest text-zinc-500"><th class="text-left py-4">Address</th><th class="text-right py-4">Sold</th><th class="text-center py-4">Date</th><th class="text-center py-4">Beds/Baths</th><th class="text-right py-4">Sq Ft</th><th class="text-center py-4">Distance</th><th class="text-right py-4">Adj.</th></tr></thead><tbody class="divide-y divide-zinc-800">`;
-        demoComps.forEach(c => {
-          html += `<tr class="hover:bg-white/5"><td class="py-5 font-light">${c.address}</td><td class="py-5 text-right">$${c.sold.toLocaleString()}</td><td class="py-5 text-center text-zinc-400">${c.date}</td><td class="py-5 text-center">${c.beds}</td><td class="py-5 text-right">${c.sqft}</td><td class="py-5 text-center text-zinc-400">${c.dist}</td><td class="py-5 text-right text-emerald-400">${c.adj}</td></tr>`;
+      try {
+        const response = await fetch(EDGE_FUNCTION_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({ address })
         });
-        html += `</tbody></table>`;
-        document.getElementById('compsTable').innerHTML = html;
-      }, 1100);
+
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+          throw new Error(data.error || 'ARV lookup failed');
+        }
+
+        renderResults(data);
+      } catch (err) {
+        showError(err.message);
+      } finally {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('runBtn').disabled = false;
+      }
     }
 
-    document.getElementById('address').addEventListener('keypress', e => { if (e.key === 'Enter') runComps(); });
-    window.onload = () => { document.getElementById('address').value = "923 Hilltop Dr, Milton, WI 53563"; };
+    function renderResults(data) {
+      document.getElementById('arvMid').textContent = '$' + data.arv.toLocaleString();
+      document.getElementById('arvRange').textContent =
+        '$' + data.arvLow.toLocaleString() + ' – $' + data.arvHigh.toLocaleString();
+
+      document.getElementById('subjectInfo').innerHTML =
+        `${data.subject.address}<br>` +
+        `${data.subject.beds} bed / ${data.subject.baths} bath · ${data.subject.sqft.toLocaleString()} sqft`;
+
+      document.getElementById('methodology').textContent =
+        `Avg $/sqft of ${data.comps.length} closest comps × subject sqft. ` +
+        `Avg comp $/sqft: $${data.avgPricePerSqft}.`;
+
+      let html = `<table class="w-full text-sm"><thead><tr class="border-b border-zinc-700 text-xs uppercase tracking-widest text-zinc-500">
+        <th class="text-left py-4">Address</th>
+        <th class="text-right py-4">Sold</th>
+        <th class="text-right py-4">$/SqFt</th>
+        <th class="text-center py-4">Beds/Baths</th>
+        <th class="text-right py-4">Sq Ft</th>
+        <th class="text-center py-4">Date</th>
+      </tr></thead><tbody class="divide-y divide-zinc-800">`;
+
+      data.comps.forEach(c => {
+        html += `<tr class="hover:bg-white/5">
+          <td class="py-5 font-light">${c.address}</td>
+          <td class="py-5 text-right">$${c.soldPrice.toLocaleString()}</td>
+          <td class="py-5 text-right text-amber-300">$${c.pricePerSqft}</td>
+          <td class="py-5 text-center">${c.beds}/${c.baths}</td>
+          <td class="py-5 text-right">${c.sqft.toLocaleString()}</td>
+          <td class="py-5 text-center text-zinc-400">${c.soldDate}</td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+      document.getElementById('compsTable').innerHTML = html;
+      document.getElementById('results').classList.remove('hidden');
+    }
+
+    function showError(msg) {
+      const errEl = document.getElementById('error');
+      errEl.textContent = '⚠️ ' + msg;
+      errEl.classList.remove('hidden');
+    }
+
+    document.getElementById('address').addEventListener('keypress', e => {
+      if (e.key === 'Enter') runARV();
+    });
   </script>
 </body>
 </html>
