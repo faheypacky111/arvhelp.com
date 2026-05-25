@@ -40,6 +40,19 @@
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
+
+    /* ARV number — keep on ONE line, scale smartly to fit */
+    .arv-number {
+      white-space: nowrap;
+      letter-spacing: -0.02em;
+      font-size: clamp(2.75rem, 8vw, 5rem);
+    }
+
+    /* Subject address — allow wrapping but on word boundaries only */
+    .subject-address {
+      word-break: normal;
+      overflow-wrap: break-word;
+    }
   </style>
 </head>
 <body class="min-h-screen text-zinc-200">
@@ -69,15 +82,15 @@
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 lg:gap-8">
 
         <!-- ARV card -->
-        <div class="lg:col-span-5 card rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-12 border border-zinc-800">
+        <div class="lg:col-span-5 card rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-10 border border-zinc-800">
           <p class="uppercase text-amber-300 text-[10px] sm:text-xs tracking-[1.5px] sm:tracking-[2px] mb-2">ESTIMATED AFTER-REPAIR VALUE</p>
-          <div id="arvMid" class="display-font text-5xl sm:text-6xl lg:text-7xl font-light gold leading-none mt-4 sm:mt-6 mb-1 break-words">—</div>
+          <div id="arvMid" class="display-font arv-number font-light gold leading-none mt-4 sm:mt-6 mb-1">—</div>
           <div id="arvRange" class="text-base sm:text-xl lg:text-2xl text-zinc-400">—</div>
           <div id="cachedBadge" class="hidden mt-2 text-[10px] uppercase tracking-widest text-zinc-500">⚡ cached result</div>
 
           <div class="mt-6 sm:mt-10 lg:mt-12 pt-6 sm:pt-8 lg:pt-10 border-t border-zinc-700">
             <div class="text-[10px] sm:text-xs uppercase tracking-widest text-zinc-500 mb-2">SUBJECT PROPERTY</div>
-            <div id="subjectInfo" class="text-zinc-300 text-sm sm:text-base leading-relaxed"></div>
+            <div id="subjectInfo" class="text-zinc-300 text-sm sm:text-base leading-relaxed subject-address"></div>
           </div>
 
           <div class="mt-5 sm:mt-7 pt-5 sm:pt-6 border-t border-zinc-700">
@@ -148,23 +161,20 @@
       document.getElementById('arvRange').textContent =
         '$' + data.arvLow.toLocaleString() + ' – $' + data.arvHigh.toLocaleString();
 
-      // Show cached badge if applicable
       if (data.cached) {
         document.getElementById('cachedBadge').classList.remove('hidden');
       } else {
         document.getElementById('cachedBadge').classList.add('hidden');
       }
 
-      // Subject info — handle missing values gracefully + show year built
       const beds = (data.subject.beds && data.subject.beds !== '—') ? data.subject.beds : '—';
       const baths = (data.subject.baths && data.subject.baths !== '—') ? data.subject.baths : '—';
       const yearBuilt = data.subject.yearBuilt ? `· Built ${data.subject.yearBuilt}` : '';
 
       document.getElementById('subjectInfo').innerHTML =
-        `${data.subject.address}<br>` +
+        `${escapeHtml(data.subject.address)}<br>` +
         `${beds} bed / ${baths} bath · ${data.subject.sqft.toLocaleString()} sqft ${yearBuilt}`;
 
-      // Methodology — accurate language now
       const ppsf = data.medianPricePerSqft || data.avgPricePerSqft;
       document.getElementById('methodology').textContent =
         `Median $/sqft of ${data.comps.length} closest comps × subject sqft. ` +
