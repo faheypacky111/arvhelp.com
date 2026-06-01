@@ -64,9 +64,14 @@
       <label class="block text-[10px] sm:text-xs uppercase tracking-[2px] sm:tracking-[3px] text-zinc-500 mb-3 sm:mb-4 font-medium">SUBJECT PROPERTY ADDRESS</label>
       <input id="address" type="text" placeholder="923 Hilltop Dr, Milton, WI 53563" autocomplete="off" autocapitalize="words" class="input-focus w-full bg-transparent border border-zinc-700 rounded-xl sm:rounded-2xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 outline-none placeholder-zinc-600">
 
-      <button id="runBtn" onclick="runARV()" class="mt-5 sm:mt-8 lg:mt-10 w-full py-4 sm:py-5 lg:py-7 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 hover:brightness-110 active:brightness-95 transition-all duration-300 rounded-xl sm:rounded-2xl text-sm sm:text-lg lg:text-xl font-medium tracking-widest text-black">
+      <button id="runBtn" onclick="runARV()" class="hidden mt-5 sm:mt-8 lg:mt-10 w-full py-4 sm:py-5 lg:py-7 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 hover:brightness-110 active:brightness-95 transition-all duration-300 rounded-xl sm:rounded-2xl text-sm sm:text-lg lg:text-xl font-medium tracking-widest text-black">
         DETERMINE ARV
       </button>
+
+      <button id="unlockBtn" onclick="unlock()" class="hidden mt-5 sm:mt-8 lg:mt-10 w-full py-4 sm:py-5 lg:py-7 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 hover:brightness-110 active:brightness-95 transition-all duration-300 rounded-xl sm:rounded-2xl text-sm sm:text-lg lg:text-xl font-medium tracking-widest text-black">
+        <i class="fa-solid fa-lock-open mr-2"></i>UNLIMITED PROPERTY SUBMISSIONS FOR $7
+      </button>
+      <p id="unlockNote" class="hidden mt-3 text-center text-[11px] sm:text-xs text-zinc-500">One-time payment · Instant lifetime access · Secure checkout via Stripe</p>
     </div>
 
     <!-- Error -->
@@ -118,9 +123,94 @@
 
   <script>
     const EDGE_FUNCTION_URL = 'https://srdkmhvkmgrzvuhxaesb.supabase.co/functions/v1/arv-lookup';
+    const CHECKOUT_URL = 'https://srdkmhvkmgrzvuhxaesb.supabase.co/functions/v1/create-checkout';
+    const VERIFY_URL = 'https://srdkmhvkmgrzvuhxaesb.supabase.co/functions/v1/verify-payment';
     const SUPABASE_ANON_KEY = 'sb_publishable_Bk7rO3hn513kLHSGwG9DFQ_Cq7moIkp';
+    const PAID_KEY = 'arvhelp_paid';
+
+    function isPaid() {
+      return localStorage.getItem(PAID_KEY) === 'true';
+    }
+
+    // Show the correct button based on paid state.
+    function applyGate() {
+      const paid = isPaid();
+      document.getElementById('runBtn').classList.toggle('hidden', !paid);
+      document.getElementById('unlockBtn').classList.toggle('hidden', paid);
+      document.getElementById('unlockNote').classList.toggle('hidden', paid);
+    }
+
+    // Send the user to Stripe Checkout.
+    async function unlock() {
+      const btn = document.getElementById('unlockBtn');
+      const original = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>REDIRECTING TO SECURE CHECKOUT...';
+      try {
+        const origin = window.location.origin + window.location.pathname;
+        const resp = await fetch(CHECKOUT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            successUrl: `${origin}?paid=true&session_id={CHECKOUT_SESSION_ID}`,
+            cancelUrl: origin
+          })
+        });
+        const data = await resp.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error(data.error || 'Could not start checkout');
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerHTML = original;
+        showError('Checkout could not start: ' + err.message + '. Please try again.');
+      }
+    }
+
+    // On return from Stripe, verify the payment with the backend before unlocking.
+    async function handlePaidReturn() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('paid') !== 'true') return;
+      const sessionId = params.get('session_id');
+
+      // Clean the URL immediately so a refresh can't replay it.
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+
+      if (!sessionId) return;
+
+      try {
+        const resp = await fetch(VERIFY_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({ sessionId })
+        });
+        const data = await resp.json();
+        if (data.paid === true) {
+          localStorage.setItem(PAID_KEY, 'true');
+          applyGate();
+        } else {
+          showError('We could not confirm your payment. If you were charged, please contact support.');
+        }
+      } catch (err) {
+        showError('Payment verification failed: ' + err.message);
+      }
+    }
 
     async function runARV() {
+      if (!isPaid()) {
+        applyGate();
+        showError('Please unlock the tool to run property valuations.');
+        return;
+      }
       const address = document.getElementById('address').value.trim();
       if (!address) {
         showError('Please enter a property address');
@@ -271,6 +361,10 @@
     document.getElementById('address').addEventListener('keypress', e => {
       if (e.key === 'Enter') runARV();
     });
+
+    // On load: set the gate, then check if we're returning from Stripe.
+    applyGate();
+    handlePaidReturn();
   </script>
 </body>
 </html>
