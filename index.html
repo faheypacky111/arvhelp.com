@@ -72,6 +72,7 @@
         <i class="fa-solid fa-lock mr-2"></i>UNLIMITED PROPERTY SUBMISSIONS FOR $7
       </button>
       <p id="unlockNote" class="hidden mt-3 text-center text-[11px] sm:text-xs text-zinc-500">One-time payment · Instant lifetime access · Secure checkout via Stripe</p>
+      <p id="refundNote" class="hidden mt-1 text-center text-[10px] sm:text-[11px] text-zinc-600">All sales are final. No refunds.</p>
     </div>
 
     <!-- Error -->
@@ -121,6 +122,12 @@
     </div>
   </div>
 
+  <footer id="disclaimer" class="hidden max-w-6xl mx-auto px-4 sm:px-6 pb-10 sm:pb-14">
+    <p class="text-center text-[10px] sm:text-[11px] leading-relaxed text-zinc-600">
+      ARV Help provides automated estimates for informational purposes only.
+    </p>
+  </footer>
+
   <script>
     const EDGE_FUNCTION_URL = 'https://srdkmhvkmgrzvuhxaesb.supabase.co/functions/v1/arv-lookup';
     const CHECKOUT_URL = 'https://srdkmhvkmgrzvuhxaesb.supabase.co/functions/v1/create-checkout';
@@ -138,6 +145,7 @@
       document.getElementById('runBtn').classList.toggle('hidden', !paid);
       document.getElementById('unlockBtn').classList.toggle('hidden', paid);
       document.getElementById('unlockNote').classList.toggle('hidden', paid);
+      document.getElementById('refundNote').classList.toggle('hidden', paid);
     }
 
     // Send the user to Stripe Checkout.
@@ -221,6 +229,7 @@
 
       document.getElementById('error').classList.add('hidden');
       document.getElementById('results').classList.add('hidden');
+      document.getElementById('disclaimer').classList.add('hidden');
       document.getElementById('loading').classList.remove('hidden');
       document.getElementById('runBtn').disabled = true;
 
@@ -296,8 +305,10 @@
 
       const ppsf = data.medianPricePerSqft || data.avgPricePerSqft;
       document.getElementById('methodology').textContent =
-        `Median $/sqft of ${data.comps.length} closest comps × subject sqft. ` +
-        `Range = 25th–75th percentile. Median comp $/sqft: $${ppsf}.`;
+        `We looked at the ${data.comps.length} most similar homes sold nearby. ` +
+        `On average they sold for about $${ppsf} per square foot. ` +
+        `We multiply that by this home's size to estimate its value, then blend it ` +
+        `with Zillow's estimate. The range shows the likely high and low.`;
 
       // ---- Desktop/Tablet table view ----
       let tableHtml = `<table class="w-full text-sm"><thead><tr class="border-b border-zinc-700 text-xs uppercase tracking-widest text-zinc-500">
@@ -339,6 +350,7 @@
       document.getElementById('compsMobile').innerHTML = mobileHtml;
 
       document.getElementById('results').classList.remove('hidden');
+      document.getElementById('disclaimer').classList.remove('hidden');
 
       if (window.innerWidth < 768) {
         document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
