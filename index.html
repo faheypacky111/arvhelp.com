@@ -45,7 +45,7 @@
     #arvMid {
       white-space: nowrap !important;
       letter-spacing: -0.025em !important;
-      font-size: clamp(2.5rem, 6vw, 4.5rem) !important;
+      font-size: clamp(1.75rem, 9vw, 4.5rem) !important;
       line-height: 1 !important;
       overflow: visible;
     }
@@ -68,7 +68,7 @@
         DETERMINE ARV
       </button>
 
-      <button id="unlockBtn" onclick="unlock()" class="hidden mt-5 sm:mt-8 lg:mt-10 w-full py-4 sm:py-5 lg:py-7 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 hover:brightness-110 active:brightness-95 transition-all duration-300 rounded-xl sm:rounded-2xl text-sm sm:text-lg lg:text-xl font-medium tracking-widest text-black">
+      <button id="unlockBtn" onclick="unlock()" class="hidden mt-5 sm:mt-8 lg:mt-10 w-full py-4 sm:py-5 lg:py-7 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 hover:brightness-110 active:brightness-95 transition-all duration-300 rounded-xl sm:rounded-2xl text-xs sm:text-lg lg:text-xl font-medium tracking-tight sm:tracking-widest text-black px-2">
         <i class="fa-solid fa-lock mr-2"></i>UNLIMITED PROPERTY SUBMISSIONS FOR $7
       </button>
       <p id="unlockNote" class="hidden mt-3 text-center text-[11px] sm:text-xs text-zinc-500">One-time payment · Instant lifetime access · Secure checkout via Stripe</p>
@@ -305,10 +305,7 @@
 
       const ppsf = data.medianPricePerSqft || data.avgPricePerSqft;
       document.getElementById('methodology').textContent =
-        `We looked at the ${data.comps.length} most similar homes sold nearby. ` +
-        `On average they sold for about $${ppsf} per square foot. ` +
-        `We multiply that by this home's size to estimate its value, then blend it ` +
-        `with Zillow's estimate. The range shows the likely high and low.`;
+        `Based on the ${data.comps.length} most similar nearby sales, averaging about $${ppsf} per square foot.`;
 
       // ---- Desktop/Tablet table view ----
       let tableHtml = `<table class="w-full text-sm"><thead><tr class="border-b border-zinc-700 text-xs uppercase tracking-widest text-zinc-500">
