@@ -7,7 +7,35 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="ARV Help">
-  <title>ARV Help</title>
+
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-B6SW5GKH4X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-B6SW5GKH4X');
+  </script>
+
+  <title>ARV Help — Instant ARV Estimates for Real Estate Wholesalers</title>
+  <meta name="description" content="Get instant After-Repair Value (ARV) estimates for any property. Built for real estate wholesalers and investors — enter an address and get comparable sales and an ARV in seconds.">
+  <meta name="keywords" content="ARV calculator, after repair value, real estate wholesaling, ARV estimate, comparable sales, comps, property valuation, wholesale real estate, investor tools">
+  <meta name="author" content="ARV Help">
+  <link rel="canonical" href="https://arvhelp.com/">
+
+  <!-- Open Graph (Facebook, LinkedIn, iMessage) -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://arvhelp.com/">
+  <meta property="og:title" content="ARV Help — Instant ARV Estimates for Real Estate Wholesalers">
+  <meta property="og:description" content="Enter any address and get an instant After-Repair Value estimate with comparable sales. Built for wholesalers and investors.">
+  <meta property="og:site_name" content="ARV Help">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="ARV Help — Instant ARV Estimates">
+  <meta name="twitter:description" content="Instant After-Repair Value estimates with comparable sales, built for real estate wholesalers and investors.">
+  <meta name="twitter:site" content="@arvhelp">
+
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000000'/%3E%3C/svg%3E">
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23000000'/%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -54,15 +82,58 @@
       word-break: normal;
       overflow-wrap: break-word;
     }
+
+    /* Accessibility: visible keyboard focus */
+    :focus-visible {
+      outline: 2px solid #d4af37;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* Screen-reader-only utility */
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Respect reduced-motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* Performance: drop the expensive backdrop blur on mobile */
+    @media (max-width: 640px) {
+      .card { backdrop-filter: none; background: rgba(20, 20, 20, 1); }
+    }
+
+    /* Clean print output */
+    @media print {
+      body { background: #fff; color: #000; }
+      .card { background: #fff !important; border: 1px solid #ccc; box-shadow: none; }
+      #runBtn, #unlockBtn, #unlockNote, #refundNote, #loading { display: none !important; }
+      .gold, #arvMid { color: #000 !important; }
+      a[href]::after { content: ""; }
+    }
   </style>
 </head>
 <body class="min-h-screen text-zinc-200">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-16 lg:pt-20 pb-12 sm:pb-24">
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-16 lg:pt-20 pb-12 sm:pb-24">
+    <h1 class="sr-only">ARV Help — Instant After-Repair Value (ARV) Estimates for Real Estate Wholesalers</h1>
 
     <!-- Address input card -->
     <div class="card rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-12 border border-zinc-800 shadow-2xl">
-      <label class="block text-[10px] sm:text-xs uppercase tracking-[2px] sm:tracking-[3px] text-zinc-500 mb-3 sm:mb-4 font-medium">SUBJECT PROPERTY ADDRESS</label>
-      <input id="address" type="text" placeholder="923 Hilltop Dr, Milton, WI 53563" autocomplete="off" autocapitalize="words" class="input-focus w-full bg-transparent border border-zinc-700 rounded-xl sm:rounded-2xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 outline-none placeholder-zinc-600">
+      <label for="address" class="block text-[10px] sm:text-xs uppercase tracking-[2px] sm:tracking-[3px] text-zinc-400 mb-3 sm:mb-4 font-medium">SUBJECT PROPERTY ADDRESS</label>
+      <input id="address" type="text" placeholder="923 Hilltop Dr, Milton, WI 53563" autocomplete="off" autocapitalize="words" aria-label="Subject property address" class="input-focus w-full bg-transparent border border-zinc-700 rounded-xl sm:rounded-2xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 outline-none placeholder-zinc-600">
 
       <button id="runBtn" onclick="runARV()" class="hidden mt-5 sm:mt-8 lg:mt-10 w-full py-4 sm:py-5 lg:py-7 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 hover:brightness-110 active:brightness-95 transition-all duration-300 rounded-xl sm:rounded-2xl text-sm sm:text-lg lg:text-xl font-medium tracking-widest text-black">
         DETERMINE ARV
@@ -71,8 +142,8 @@
       <button id="unlockBtn" onclick="unlock()" class="hidden mt-5 sm:mt-8 lg:mt-10 w-full py-4 sm:py-5 lg:py-7 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 hover:brightness-110 active:brightness-95 transition-all duration-300 rounded-xl sm:rounded-2xl text-xs sm:text-lg lg:text-xl font-medium tracking-tight sm:tracking-widest text-black px-2">
         <i class="fa-solid fa-lock mr-2"></i>UNLIMITED PROPERTY SUBMISSIONS FOR $7
       </button>
-      <p id="unlockNote" class="hidden mt-3 text-center text-[11px] sm:text-xs text-zinc-500">One-time payment · Instant lifetime access · Secure checkout via Stripe</p>
-      <p id="refundNote" class="hidden mt-1 text-center text-[10px] sm:text-[11px] text-zinc-600">All sales are final. No refunds.</p>
+      <p id="unlockNote" class="hidden mt-3 text-center text-[11px] sm:text-xs text-zinc-400">One-time payment · Instant lifetime access · Secure checkout via Stripe</p>
+      <p id="refundNote" class="hidden mt-1 text-center text-[10px] sm:text-[11px] text-zinc-400">All sales are final. No refunds.</p>
     </div>
 
     <!-- Error -->
@@ -93,17 +164,17 @@
           <p class="uppercase text-amber-300 text-[10px] sm:text-xs tracking-[1.5px] sm:tracking-[2px] mb-2">ESTIMATED AFTER-REPAIR VALUE</p>
           <div id="arvMid" class="display-font font-light gold mt-4 sm:mt-6 mb-1">—</div>
           <div id="arvRange" class="text-base sm:text-xl lg:text-2xl text-zinc-400">—</div>
-          <div id="cachedBadge" class="hidden mt-2 text-[10px] uppercase tracking-widest text-zinc-500">⚡ cached result</div>
+          <div id="cachedBadge" class="hidden mt-2 text-[10px] uppercase tracking-widest text-zinc-400">⚡ cached result</div>
           <div id="confidenceBadge" class="hidden mt-3 inline-flex items-center gap-1.5 text-[10px] sm:text-xs uppercase tracking-widest px-2.5 py-1 rounded-full border"></div>
           <div id="caveat" class="hidden mt-2 text-xs sm:text-sm text-zinc-400 leading-relaxed"></div>
 
           <div class="mt-6 sm:mt-10 lg:mt-12 pt-6 sm:pt-8 lg:pt-10 border-t border-zinc-700">
-            <div class="text-[10px] sm:text-xs uppercase tracking-widest text-zinc-500 mb-2">SUBJECT PROPERTY</div>
+            <div class="text-[10px] sm:text-xs uppercase tracking-widest text-zinc-400 mb-2">SUBJECT PROPERTY</div>
             <div id="subjectInfo" class="text-zinc-300 text-sm sm:text-base leading-relaxed subject-address"></div>
           </div>
 
           <div class="mt-5 sm:mt-7 pt-5 sm:pt-6 border-t border-zinc-700">
-            <div class="text-[10px] sm:text-xs uppercase tracking-widest text-zinc-500 mb-2">METHODOLOGY</div>
+            <div class="text-[10px] sm:text-xs uppercase tracking-widest text-zinc-400 mb-2">METHODOLOGY</div>
             <div id="methodology" class="text-zinc-400 text-xs leading-relaxed"></div>
           </div>
         </div>
@@ -120,10 +191,10 @@
         </div>
       </div>
     </div>
-  </div>
+  </main>
 
   <footer id="disclaimer" class="hidden max-w-6xl mx-auto px-4 sm:px-6 pb-10 sm:pb-14">
-    <p class="text-center text-[10px] sm:text-[11px] leading-relaxed text-zinc-600">
+    <p class="text-center text-[10px] sm:text-[11px] leading-relaxed text-zinc-400">
       ARV Help provides automated estimates for informational purposes only.
     </p>
   </footer>
@@ -308,7 +379,7 @@
         `Based on the ${data.comps.length} most similar nearby sales, averaging about $${ppsf} per square foot.`;
 
       // ---- Desktop/Tablet table view ----
-      let tableHtml = `<table class="w-full text-sm"><thead><tr class="border-b border-zinc-700 text-xs uppercase tracking-widest text-zinc-500">
+      let tableHtml = `<table class="w-full text-sm"><thead><tr class="border-b border-zinc-700 text-xs uppercase tracking-widest text-zinc-400">
         <th class="text-left py-4">Address</th>
         <th class="text-right py-4">Sold</th>
         <th class="text-right py-4">$/SqFt</th>
