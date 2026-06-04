@@ -120,7 +120,7 @@
     @media print {
       body { background: #fff; color: #000; }
       .card { background: #fff !important; border: 1px solid #ccc; box-shadow: none; }
-      #runBtn, #unlockBtn, #unlockNote, #refundNote, #loading { display: none !important; }
+      #runBtn, #unlockBtn, #loading { display: none !important; }
       .gold, #arvMid { color: #000 !important; }
       a[href]::after { content: ""; }
     }
@@ -142,8 +142,7 @@
       <button id="unlockBtn" onclick="unlock()" class="hidden mt-5 sm:mt-8 lg:mt-10 w-full py-4 sm:py-5 lg:py-7 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 hover:brightness-110 active:brightness-95 transition-all duration-300 rounded-xl sm:rounded-2xl text-xs sm:text-lg lg:text-xl font-medium tracking-tight sm:tracking-widest text-black px-2">
         <i class="fa-solid fa-lock mr-2"></i>UNLIMITED PROPERTY SUBMISSIONS FOR $5
       </button>
-      <p id="unlockNote" class="hidden mt-3 text-center text-[11px] sm:text-xs text-zinc-400">One-time payment · Instant lifetime access · Secure checkout via Stripe</p>
-      <p id="refundNote" class="hidden mt-1 text-center text-[10px] sm:text-[11px] text-zinc-400">All sales are final. No refunds.</p>
+      <p id="unlockNote" class="hidden"></p>
     </div>
 
     <!-- Error -->
@@ -215,8 +214,6 @@
       const paid = isPaid();
       document.getElementById('runBtn').classList.toggle('hidden', !paid);
       document.getElementById('unlockBtn').classList.toggle('hidden', paid);
-      document.getElementById('unlockNote').classList.toggle('hidden', paid);
-      document.getElementById('refundNote').classList.toggle('hidden', paid);
     }
 
     // Send the user to Stripe Checkout.
