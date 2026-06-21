@@ -151,7 +151,7 @@
       <button id="unlockBtn" onclick="unlock()" class="hidden mt-5 sm:mt-8 lg:mt-10 w-full py-4 sm:py-5 lg:py-7 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 hover:brightness-110 active:brightness-95 transition-all duration-300 rounded-xl sm:rounded-2xl text-xs sm:text-lg lg:text-xl font-medium tracking-tight sm:tracking-widest text-black px-2">
         <i class="fa-solid fa-lock mr-2"></i>Pay $5. Lifetime access to off-market underwriting
       </button>
-      <p id="unlockNote" class="hidden"></p>
+      <p id="unlockNote" class="hidden mt-3 text-center text-sm sm:text-base text-amber-400 font-medium"></p>
     </div>
 
     <!-- Error -->
@@ -213,16 +213,26 @@
     const VERIFY_URL = 'https://srdkmhvkmgrzvuhxaesb.supabase.co/functions/v1/verify-payment';
     const SUPABASE_ANON_KEY = 'sb_publishable_Bk7rO3hn513kLHSGwG9DFQ_Cq7moIkp';
     const PAID_KEY = 'arvhelp_paid';
+    const FREE_KEY = 'arvhelp_free_used';
 
     function isPaid() {
       return localStorage.getItem(PAID_KEY) === 'true';
     }
 
-    // Show the correct button based on paid state.
+    function freeUsed() {
+      return localStorage.getItem(FREE_KEY) === 'true';
+    }
+
+    function markFreeUsed() {
+      localStorage.setItem(FREE_KEY, 'true');
+    }
+
+    // Show the run button if the user is paid OR still has their free report.
+    // Otherwise show the pay button.
     function applyGate() {
-      const paid = isPaid();
-      document.getElementById('runBtn').classList.toggle('hidden', !paid);
-      document.getElementById('unlockBtn').classList.toggle('hidden', paid);
+      const canRun = isPaid() || !freeUsed();
+      document.getElementById('runBtn').classList.toggle('hidden', !canRun);
+      document.getElementById('unlockBtn').classList.toggle('hidden', canRun);
     }
 
     // Send the user to Stripe Checkout.
@@ -291,9 +301,14 @@
     }
 
     async function runARV() {
-      if (!isPaid()) {
+      // Paid users run unlimited. Unpaid users get one free report; after that,
+      // the second attempt swaps in the pay button instead of running.
+      if (!isPaid() && freeUsed()) {
         applyGate();
-        showError('Please unlock the tool to run property valuations.');
+        const note = document.getElementById('unlockNote');
+        note.textContent = 'Enable unlimited underwriting for $5.';
+        note.classList.remove('hidden');
+        document.getElementById('unlockBtn').scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
       const address = document.getElementById('address').value.trim();
@@ -327,6 +342,8 @@
         }
 
         renderResults(data);
+        // A successful free report counts. Paid users are unlimited, so skip.
+        if (!isPaid()) markFreeUsed();
       } catch (err) {
         showError(err.message);
       } finally {
